@@ -11,6 +11,12 @@ from transformers import AutoTokenizer, AutoModelWithLMHead
 tokenizer = AutoTokenizer.from_pretrained("mrm8488/t5-base-finetuned-summarize-news")
 model = AutoModelWithLMHead.from_pretrained("mrm8488/t5-base-finetuned-summarize-news")
 
+st.cache(show_spinner=False)
+def load_model():
+    tokenizer = AutoTokenizer.from_pretrained("mrm8488/t5-base-finetuned-summarize-news")
+    model = AutoModelWithLMHead.from_pretrained("mrm8488/t5-base-finetuned-summarize-news")
+    return tokenizer model
+
 # running the query in Google
 def getResults(uQuery, uTLD, uNum, uStart, uStop):
     try:
@@ -63,15 +69,17 @@ def main():
     user_input = st.text_area("Write Your Question Here")
     language_choice = st.selectbox("Language Choice", ["English","German"])
     if st.button("Submit"):
-        if language_choice == "English":
-            results_1 = getResults(user_input, "com", 3, 1,3)
-            d = readResults(results_1, user_input)
-            d = list(filter(None.__ne__, d))
-            d = [i for i in d if len(i)>= 200]
-            full_body = ' '.join(d)
-            summary_result = summarize(full_body, 150)
-            st.write(summary_result)
-        # elif language_choice == "German":
- 
+        results_1 = getResults(user_input, "com", 3, 1,3)
+        d = readResults(results_1, user_input)
+        d = list(filter(None.__ne__, d))
+        d = [i for i in d if len(i)>= 200]
+        full_body = ' '.join(d)
+        summary_result = summarize(full_body, 150)
+        st.write(summary_result)
+    # Here comes the sidebar w/ logo, credits and navigaton
+    st.sidebar.image("logo-wordlift.png", width=200)
+    st.sidebar.subheader("Text Generator")
+    st.sidebar.info("Cudos to the WordLift Team")
+
 if __name__ == "__main__":
     main()
