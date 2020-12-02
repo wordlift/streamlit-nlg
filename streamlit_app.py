@@ -7,12 +7,12 @@ import pandas as pd
 import trafilatura
 from transformers import AutoTokenizer, AutoModelWithLMHead
 
-st.cache(show_spinner=False)
+@st.cache(show_spinner=False)
 def load_tokenizer():
     tokenizer = AutoTokenizer.from_pretrained("mrm8488/t5-base-finetuned-summarize-news")
     return tokenizer
 
-st.cache(show_spinner=False)
+@st.cache(show_spinner=False)
 def load_model():
     model = AutoModelWithLMHead.from_pretrained("mrm8488/t5-base-finetuned-summarize-news")
     return model
@@ -30,6 +30,7 @@ PAGE_CONFIG = {
 st.set_page_config(**PAGE_CONFIG)
 
 # running the query in Google
+@st.cache
 def getResults(uQuery, uTLD, uNum, uStart, uStop):
     try:
         from googlesearch import search
@@ -84,19 +85,27 @@ def main():
 
     # st.title("NLG Streamlit App")
     st.title(":fire:WordLift NLG:fire:")
-    # st.subheader("T5 Summarization & Generation")
     st.subheader("Prepare Your Question")
+    st.markdown("""
+    #### Intro
+    This is a NLP based analysis of Google search results.  
+    Insert the question you wish to ask and hit **Generate**.
+    If you are interested, read more on our blog [WordLift Blog](https://wordlift.io/blog/en/). 
+            """)
     # user_input = st.text_area("Enter Query Here")
     user_input = st.text_area("Write Your Question Here")
 
-    if st.button("Submit"):
+    if st.button("Generate"):
         results_1 = getResults(user_input, "com", 3, 1,3)
         d = readResults(results_1, user_input)
         d = list(filter(None.__ne__, d))
         d = [i for i in d if len(i)>= 200]
         full_body = ' '.join(d)
         summary_result = summarize(full_body, 150)
-        st.write(summary_result)
+
+        st.subheader('💎Answer💎')
+
+        st.success(summary_result)
 
     # language_choice = st.selectbox("Language Choice", ["English","German"])
     # if st.button("Submit"):
