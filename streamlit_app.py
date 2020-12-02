@@ -68,7 +68,7 @@ def summarize(text, max_length=200):
                                   max_length=512)
     generated_ids = model.generate(input_ids=input_ids,
                                     num_beams=2,
-                                    max_length=max_length,
+                                    #max_length=max_length,
                                     repetition_penalty=2.5,
                                     length_penalty=1.0,
                                     early_stopping=False)
