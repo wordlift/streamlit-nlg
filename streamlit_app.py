@@ -6,10 +6,7 @@ import re
 import pandas as pd
 import trafilatura
 
-# Installing t5-base-finetuned-summarize-news
 from transformers import AutoTokenizer, AutoModelWithLMHead
-tokenizer = AutoTokenizer.from_pretrained("mrm8488/t5-base-finetuned-summarize-news")
-model = AutoModelWithLMHead.from_pretrained("mrm8488/t5-base-finetuned-summarize-news")
 
 st.cache(show_spinner=False)
 def load_tokenizer():
@@ -20,7 +17,8 @@ st.cache(show_spinner=False)
 def load_model():
     model = AutoModelWithLMHead.from_pretrained("mrm8488/t5-base-finetuned-summarize-news")
     return model
-
+    
+# Installing t5-base-finetuned-summarize-news
 tokenizer = load_tokenizer()
 model = load_model()
 
