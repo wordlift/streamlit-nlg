@@ -12,10 +12,17 @@ tokenizer = AutoTokenizer.from_pretrained("mrm8488/t5-base-finetuned-summarize-n
 model = AutoModelWithLMHead.from_pretrained("mrm8488/t5-base-finetuned-summarize-news")
 
 st.cache(show_spinner=False)
-def load_model():
+def load_tokenizer():
     tokenizer = AutoTokenizer.from_pretrained("mrm8488/t5-base-finetuned-summarize-news")
+    return tokenizer
+
+st.cache(show_spinner=False)
+def load_model():
     model = AutoModelWithLMHead.from_pretrained("mrm8488/t5-base-finetuned-summarize-news")
-    return tokenizer model
+    return model
+
+tokenizer = load_tokenizer()
+model = load_model()
 
 # running the query in Google
 def getResults(uQuery, uTLD, uNum, uStart, uStop):
@@ -67,7 +74,6 @@ def main():
     st.title("🔥WordLift NLG🔥")
     st.subheader("Prepare Your Question")
     user_input = st.text_area("Write Your Question Here")
-    language_choice = st.selectbox("Language Choice", ["English","German"])
     if st.button("Submit"):
         results_1 = getResults(user_input, "com", 3, 1,3)
         d = readResults(results_1, user_input)
