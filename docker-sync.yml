@@ -1,0 +1,56 @@
+version: "2"
+
+syncs:
+  ${COMPOSE_PROJECT_NAME}-wordpress-sync:
+    src: "."
+
+    sync_strategy: "native_osx"
+
+    sync_excludes:
+      [
+        "Gemfile.lock",
+        "Gemfile",
+        "config.rb",
+        ".sass-cache",
+        "sass",
+        "sass-cache",
+        "composer.json",
+        "bower.json",
+        "package.json",
+        "Gruntfile*",
+        "bower_components",
+        "node_modules",
+        ".gitignore",
+        ".git",
+        "*.coffee",
+        "*.scss",
+        "*.sass",
+        ".idea",
+        ".docker",
+        "wp-content/backup-db",
+      ]
+
+    sync_excludes_type: "Name"
+
+    # optional, a list of regular expressions to exclude from the fswatch - see fswatch docs for details
+    # IMPORTANT: this is not supported by native_osx
+    watch_excludes:
+      [
+        ".*/.git",
+        ".*/node_modules",
+        ".*/bower_components",
+        ".*/sass-cache",
+        ".*/.sass-cache",
+        ".*/.sass-cache",
+        ".coffee",
+        ".scss",
+        ".sass",
+        ".gitignore",
+        ".idea/",
+        ".docker/",
+        "wp-content/backup-db/",
+      ]
+
+    host_disk_mount_mode: "cached" # see https://docs.docker.com/docker-for-mac/osxfs-caching/#cached
+
+    sync_userid: "33"

@@ -1,0 +1,30 @@
+# Ignore WP Rocket configuration files.
+wp-content/wp-rocket-config/
+wp-content/advanced-cache.php
+
+# Ignore wp-config.php
+wp-config.php
+
+mysql/
+.docker-sync/
+xdebug/
+
+.DS_Store
+.DS_Store?
+.idea/
+.maintenance
+.Spotlight-V100
+.Trashes
+.vagrant
+*.log
+*.swp
+*.Trashes
+*[Tt]humbs.db
+access_log
+debug.txt
+ehthumbs.db
+error_log
+
+wp-content/cache/
+wp-content/updraft/
+wp-content/uploads/
