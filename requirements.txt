@@ -1,7 +1,5 @@
-# The packages needed for our app
 google
 trafilatura
 transformers==3.5.0
 pandas
 re
- 

@@ -1,5 +1,4 @@
 import google
-import trafilatura
 import transformers
 
 import streamlit as st
