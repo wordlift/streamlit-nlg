@@ -6,8 +6,6 @@ import re
 import pandas as pd
 import trafilatura
 
-from transformers import AutoTokenizer, AutoModelWithLMHead
-
 st.cache(show_spinner=False)
 def load_tokenizer():
     tokenizer = AutoTokenizer.from_pretrained("mrm8488/t5-base-finetuned-summarize-news")
@@ -17,10 +15,18 @@ st.cache(show_spinner=False)
 def load_model():
     model = AutoModelWithLMHead.from_pretrained("mrm8488/t5-base-finetuned-summarize-news")
     return model
-    
 # Installing t5-base-finetuned-summarize-news
 tokenizer = load_tokenizer()
 model = load_model()
+
+# st.set_page_config has graduated out of beta. On 2021-01-06, the beta_ version will be removed.
+PAGE_CONFIG = {
+    "page_title":"WordLift Text Generator",
+    "page_icon":"🔥",
+    "layout":"centered"
+    }
+# st.beta_set_page_config(**PAGE_CONFIG)
+st.set_page_config(**PAGE_CONFIG)
 
 # running the query in Google
 def getResults(uQuery, uTLD, uNum, uStart, uStop):
@@ -69,9 +75,19 @@ def summarize(text, max_length=200):
 
 # Streamlit encourages well-structured code, like starting execution in a main() function.
 def main():
-    st.title("🔥WordLift NLG🔥")
+
+    # Here comes the sidebar w/ logo, credits and navigaton
+    st.sidebar.image("logo-wordlift.png", width=200)
+    st.sidebar.subheader("Text Generator")
+    st.sidebar.info("Cudos to the WordLift Team")
+
+    # st.title("NLG Streamlit App")
+    st.title(":fire:WordLift NLG:fire:")
+    # st.subheader("T5 Summarization & Generation")
     st.subheader("Prepare Your Question")
+    # user_input = st.text_area("Enter Query Here")
     user_input = st.text_area("Write Your Question Here")
+
     if st.button("Submit"):
         results_1 = getResults(user_input, "com", 3, 1,3)
         d = readResults(results_1, user_input)
@@ -80,10 +96,18 @@ def main():
         full_body = ' '.join(d)
         summary_result = summarize(full_body, 150)
         st.write(summary_result)
-    # Here comes the sidebar w/ logo, credits and navigaton
-    st.sidebar.image("logo-wordlift.png", width=200)
-    st.sidebar.subheader("Text Generator")
-    st.sidebar.info("Cudos to the WordLift Team")
 
+    # language_choice = st.selectbox("Language Choice", ["English","German"])
+    # if st.button("Submit"):
+    #     if language_choice == "English":
+    #         results_1 = getResults(user_input, "com", 3, 1,3)
+    #         d = readResults(results_1, user_input)
+    #         d = list(filter(None.__ne__, d))
+    #         d = [i for i in d if len(i)>= 200]
+    #         full_body = ' '.join(d)
+    #         summary_result = summarize(full_body, 150)
+    #         st.write(summary_result)
+    #     # elif language_choice == "German":
+ 
 if __name__ == "__main__":
     main()
