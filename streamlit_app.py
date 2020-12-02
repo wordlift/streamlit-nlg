@@ -6,10 +6,6 @@ import re
 import pandas as pd
 import trafilatura
 
-"""
-# Welcome to WordLift NLG!
-"""
-
 # Installing t5-base-finetuned-summarize-news
 from transformers import AutoTokenizer, AutoModelWithLMHead
 tokenizer = AutoTokenizer.from_pretrained("mrm8488/t5-base-finetuned-summarize-news")
