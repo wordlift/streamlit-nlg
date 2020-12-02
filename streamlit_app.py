@@ -10,12 +10,6 @@ import trafilatura
 # Welcome to WordLift NLG!
 """
 
-st.set_page_config(
-    page_title="WordLift NLG",
-    page_icon="🔥",
-    layout="centered"
-)
-
 # Installing t5-base-finetuned-summarize-news
 from transformers import AutoTokenizer, AutoModelWithLMHead
 tokenizer = AutoTokenizer.from_pretrained("mrm8488/t5-base-finetuned-summarize-news")
@@ -68,7 +62,7 @@ def summarize(text, max_length=200):
 
 # Streamlit encourages well-structured code, like starting execution in a main() function.
 def main():
-    st.title("WordLift NLG")
+    st.title("🔥WordLift NLG🔥")
     st.subheader("Prepare Your Question")
     user_input = st.text_area("Write Your Question Here")
     language_choice = st.selectbox("Language Choice", ["English","German"])
