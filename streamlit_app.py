@@ -24,7 +24,7 @@ model = load_model()
 # st.set_page_config has graduated out of beta. On 2021-01-06, the beta_ version will be removed.
 PAGE_CONFIG = {
     "page_title":"Free SEO Tools by WordLift",
-    "page_icon":"https://res-1.cloudinary.com/crunchbase-production/image/upload/c_lpad,h_256,w_256,f_auto,q_auto:eco/ftjf1cxrqjuewyh6kefb",
+    "page_icon":"fav-ico.png",
     "layout":"centered"
     }
 st.set_page_config(**PAGE_CONFIG)
