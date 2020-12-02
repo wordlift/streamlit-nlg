@@ -84,12 +84,12 @@ def main():
     st.sidebar.info("Cudos to the WordLift Team")
 
     # st.title("NLG Streamlit App")
-    st.title(":fire:WordLift AI Text Generator:fire:")
+    st.title(":fire:AI Text Generator:fire:")
     st.subheader("Prepare Your Question")
     st.markdown("""
     #### TL;DR
-    This is a NLG based demo to show how modern neural network generate text. Type a custom snippet and hit **Generate**.
-    If you are interested, read more on our blog [WordLift Blog](https://wordlift.io/blog/en/). 
+    This is a NLG based demo to show how modern neural network generate text. 
+    Type a custom snippet and hit **Generate**. If you are interested, read more on our [blog](https://wordlift.io/blog/en/). 
             """)
     user_input = st.text_area("Write Your Question Here 👇")
 
@@ -105,17 +105,6 @@ def main():
 
         st.success(summary_result)
 
-    # language_choice = st.selectbox("Language Choice", ["English","German"])
-    # if st.button("Submit"):
-    #     if language_choice == "English":
-    #         results_1 = getResults(user_input, "com", 3, 1,3)
-    #         d = readResults(results_1, user_input)
-    #         d = list(filter(None.__ne__, d))
-    #         d = [i for i in d if len(i)>= 200]
-    #         full_body = ' '.join(d)
-    #         summary_result = summarize(full_body, 150)
-    #         st.write(summary_result)
-    #     # elif language_choice == "German":
  
 if __name__ == "__main__":
     main()
