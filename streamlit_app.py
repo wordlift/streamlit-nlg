@@ -16,6 +16,7 @@ def load_tokenizer():
 def load_model():
     model = AutoModelWithLMHead.from_pretrained("mrm8488/t5-base-finetuned-summarize-news")
     return model
+
 # Installing t5-base-finetuned-summarize-news
 tokenizer = load_tokenizer()
 model = load_model()
@@ -26,7 +27,6 @@ PAGE_CONFIG = {
     "page_icon":"🔥",
     "layout":"centered"
     }
-# st.beta_set_page_config(**PAGE_CONFIG)
 st.set_page_config(**PAGE_CONFIG)
 
 # running the query in Google
