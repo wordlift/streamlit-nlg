@@ -5,6 +5,7 @@ import streamlit as st
 import re
 import pandas as pd
 import trafilatura
+from transformers import AutoTokenizer, AutoModelWithLMHead
 
 st.cache(show_spinner=False)
 def load_tokenizer():
