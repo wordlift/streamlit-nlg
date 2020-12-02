@@ -11,9 +11,10 @@ import trafilatura
 """
 
 st.set_page_config(
-    "page_title":"WordLift NLG",
-    "page_icon":"🔥",
-    "layout":"centered")
+    page_title="WordLift NLG",
+    page_icon="🔥",
+    layout="centered"
+)
 
 # Installing t5-base-finetuned-summarize-news
 from transformers import AutoTokenizer, AutoModelWithLMHead
