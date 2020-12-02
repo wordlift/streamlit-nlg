@@ -102,9 +102,10 @@ def main():
         summary_result = summarize(full_body, 150)
 
         st.subheader('💎 Answer 💎')
-
-        st.success(summary_result)
-
+        if summary_result.strip(): 
+            st.success(summary_result)
+        else: 
+            st.error('I am sorry. I am afraid I canot answer it.')    
  
 if __name__ == "__main__":
     main()
