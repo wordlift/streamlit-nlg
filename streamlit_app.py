@@ -71,7 +71,7 @@ def summarize(text, max_length=200):
                                     max_length=max_length,
                                     repetition_penalty=2.5,
                                     length_penalty=1.0,
-                                    early_stopping=False)
+                                    early_stopping=True)
     preds = [tokenizer.decode(g, skip_special_tokens=True, clean_up_tokenization_spaces=True) for g in generated_ids]
     return preds[0]
 
