@@ -84,16 +84,14 @@ def main():
     st.sidebar.info("Cudos to the WordLift Team")
 
     # st.title("NLG Streamlit App")
-    st.title(":fire:WordLift NLG:fire:")
+    st.title(":fire:WordLift AI Text Generator:fire:")
     st.subheader("Prepare Your Question")
     st.markdown("""
-    #### Intro
-    This is a NLP based analysis of Google search results.  
-    Insert the question you wish to ask and hit **Generate**.
+    #### TL;DR
+    This is a NLG based demo to show how modern neural network generate text. Type a custom snippet and hit **Generate**.
     If you are interested, read more on our blog [WordLift Blog](https://wordlift.io/blog/en/). 
             """)
-    # user_input = st.text_area("Enter Query Here")
-    user_input = st.text_area("Write Your Question Here")
+    user_input = st.text_area("Write Your Question Here 👇")
 
     if st.button("Generate"):
         results_1 = getResults(user_input, "com", 3, 1,3)
@@ -103,7 +101,7 @@ def main():
         full_body = ' '.join(d)
         summary_result = summarize(full_body, 150)
 
-        st.subheader('💎Answer💎')
+        st.subheader('💎 Answer 💎')
 
         st.success(summary_result)
 
