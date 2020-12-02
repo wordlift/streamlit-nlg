@@ -10,13 +10,10 @@ import trafilatura
 # Welcome to WordLift NLG!
 """
 
-PAGE_CONFIG = {
+st.set_page_config(
     "page_title":"WordLift NLG",
-    "page_icon":"smiley",
-    "layout":"centered"
-    }
-
-st.set_page_config(**PAGE_CONFIG)
+    "page_icon":"🔥",
+    "layout":"centered")
 
 # Installing t5-base-finetuned-summarize-news
 from transformers import AutoTokenizer, AutoModelWithLMHead
