@@ -22,7 +22,7 @@ model = load_model()
 
 # st.set_page_config has graduated out of beta. On 2021-01-06, the beta_ version will be removed.
 PAGE_CONFIG = {
-    "page_title":"WordLift Text Generator",
+    "page_title":"Free SEO Tools by WordLift",
     "page_icon":"🔥",
     "layout":"centered"
     }
