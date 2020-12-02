@@ -10,18 +10,18 @@ import trafilatura
 # Welcome to WordLift NLG!
 """
 
-# Installing t5-base-finetuned-summarize-news
-from transformers import AutoTokenizer, AutoModelWithLMHead
-tokenizer = AutoTokenizer.from_pretrained("mrm8488/t5-base-finetuned-summarize-news")
-model = AutoModelWithLMHead.from_pretrained("mrm8488/t5-base-finetuned-summarize-news")
-
 PAGE_CONFIG = {
     "page_title":"WordLift NLG",
     "page_icon":"smiley",
     "layout":"centered"
     }
-# st.beta_set_page_config(**PAGE_CONFIG)
+
 st.set_page_config(**PAGE_CONFIG)
+
+# Installing t5-base-finetuned-summarize-news
+from transformers import AutoTokenizer, AutoModelWithLMHead
+tokenizer = AutoTokenizer.from_pretrained("mrm8488/t5-base-finetuned-summarize-news")
+model = AutoModelWithLMHead.from_pretrained("mrm8488/t5-base-finetuned-summarize-news")
 
 # running the query in Google
 def getResults(uQuery, uTLD, uNum, uStart, uStop):
