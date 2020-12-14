@@ -2,4 +2,4 @@ google
 trafilatura
 transformers == 3.5.0
 pandas
-torch == 1.7.0
+torch 
