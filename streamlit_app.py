@@ -114,7 +114,7 @@ def main():
     # Here comes the sidebar w/ logo, credits and navigaton
     st.sidebar.image("logo-wordlift.png", width=200)
     st.sidebar.title("Text Generator")
-    options = ["WordLift BB-8", "WordLift R2-D2"]
+    options = ["WordLift R2-D2","WordLift BB-8"]
     user_option = st.sidebar.selectbox("Chose Prefered Summerization Model 👇:", options)
     st.sidebar.subheader("About WordLift")
     st.sidebar.info("[WordLift](https://wordlift.io/) is the first semantic SEO tool that uses natural language processing and linked data publishing for automating structured data markup.")
