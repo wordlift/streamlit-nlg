@@ -136,7 +136,7 @@ def main():
     if user_option == 'WordLift BB-8':
         if st.button("Generate"):
             try:
-                results_1 = getResults(user_input, "com", 3, 1,3)
+                results_1 = getResults(user_input, "com", 5, 1,5)
                 d = readResults(results_1, user_input)
                 d = list(filter(None.__ne__, d))
                 d = [i for i in d if len(i)>= 200]
