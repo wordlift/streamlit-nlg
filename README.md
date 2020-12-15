@@ -1,4 +1,4 @@
-# Welcome to our Search Intent Inspector Streamlit App!
+# Welcome to our first Streamlit App!
 
 Edit `/streamlit_app.py` to customize this app to your heart's desire :heart:
 
