@@ -139,7 +139,7 @@ def main():
                 results_1 = getResults(user_input, "com", 5, 1,5)
                 d = readResults(results_1, user_input)
                 d = list(filter(None.__ne__, d))
-                d = [i for i in d if len(i)>= 200]
+                d = [i for i in d if len(i)>= 150]
                 full_body = ' '.join(d)
                 summary_result = summarize(full_body, 150)
                 st.subheader('💎 Answer 💎')
