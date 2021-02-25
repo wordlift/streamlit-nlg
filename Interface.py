@@ -1,7 +1,6 @@
 import streamlit as st
 import streamlit.components.v1 as components
 from time import sleep
-from stqdm import stqdm
 import base64
 
 def local_css(file_name):
@@ -26,18 +25,4 @@ def set_png_as_page_bg(png_file):
     ''' % bin_str
 
     st.markdown(page_bg_img, unsafe_allow_html=True)
-    return
-
-def progress_bar(range_size):
-
-    for _ in stqdm(range(range_size), desc="This is a slow task, please be patient"):
-        sleep(0.1)
-    return
-
-def balloons(result):
-    st.balloons()
-    m1 = st.markdown('Done! thanks for being patient.')
-    m2 = st.markdown("Here's your " + result)
-    m1.empty()
-    m2.empty()
     return
