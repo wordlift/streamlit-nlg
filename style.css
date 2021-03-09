@@ -1,0 +1,72 @@
+#MainMenu {
+    visibility: hidden;
+}
+
+footer {
+    visibility: hidden;
+}
+
+body {
+    background-color: rgb(245, 250, 255);
+}
+
+.vertical {
+    border-left: 1px solid #ecf1f8;
+    height: 500px;
+    position: absolute;
+    left: 50%;
+    margin-left: -3px;
+    top: 0;
+}
+
+.stButton>button {
+    border-color: rgb(230, 234, 241);
+    width: 150px;
+    height: 50px;
+    border-radius: 6px;
+    box-shadow: 0 8px 18px 0 rgba(255, 132, 1, 0.26);
+    background-color: #ff8401;
+    font-stretch: normal;
+    font-style: normal;
+    letter-spacing: normal;
+    color: #fbfbfb;
+}
+
+.stButton>button:hover {
+    border-color: rgb(230, 234, 241);
+    color: #fbfbfb;
+    opacity: 0.75;
+}
+
+.stButton>button:active {
+    border-color: rgb(230, 234, 241);
+    background-color: #ff8401;
+    color: #fbfbfb;
+}
+
+div.row-widget.stRadio > div {
+    /* flex-direction: row; */
+    align-items: stretch;
+}
+
+div.row-widget.stRadio > div[role="radiogroup"] > label[data-baseweb="radio"] > div:first-child {
+    background-color: #037aff;
+}
+
+.stTextInput > div > div > input {
+    background-color: #ffffff;
+    box-shadow: 0 8px 18px 0 rgba(0, 8, 18, 0.05);
+}
+
+.stTextArea > div > div {
+    background-color: #ffffff;
+    box-shadow: 0 8px 18px 0 rgba(0, 8, 18, 0.05);
+}
+
+div[role="listbox"] ul {
+    background-color: #ffffff;
+}
+
+div[data-baseweb="select"] > div {
+    background-color: #ffffff;
+}
