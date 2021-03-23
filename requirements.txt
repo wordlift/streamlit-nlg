@@ -1,6 +1,0 @@
-streamlit
-google
-trafilatura
-transformers
-pandas
-torch
