@@ -154,9 +154,6 @@ st.sidebar.title("Navigation")
 page = st.sidebar.radio("Please Select Model:", tuple(pages.keys()))
 st.sidebar.info("You will need a WordLift key. You can [get one for free](https://wordlift.io/checkout/) for 14 days.")
 
-text = "hello world"
-print(count(text))
-
 # ---------------------------------------------------------------------------- #
 # Web Application
 # ---------------------------------------------------------------------------- #
