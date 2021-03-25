@@ -138,10 +138,3 @@ level = "debug"
 # String format for logging messages. If logger.datetimeFormat is set, logger messages will default to `%(asctime)s.%(msecs)03d %(message)s`. See [Python's documentation](https://docs.python.org/2.6/library/logging.html#formatter-objects) for available attributes.
 # Default: None
 messageFormat = "%(asctime)s %(levelname) -7s %(name)s: %(message)s"
-
-[theme]
-primaryColor="#f63366"
-backgroundColor="#FFFFFF"
-secondaryBackgroundColor="#f0f2f6"
-textColor="#262730"
-font="sans serif"
