@@ -3,7 +3,7 @@ on:
     tags:
       - "*.*.*"
   pull_request:
-    branches: [ main ]
+    branches: main
 
 jobs:
   docker:
