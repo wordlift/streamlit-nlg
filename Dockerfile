@@ -5,9 +5,11 @@ RUN \
     set -ex ; \
     savedAptMark="$(apt-mark showmanual)" ; \
     apt-get update ; \
-    apt install -y build-essential ; \
+    apt install -y build-essential curl ; \
     apt-mark auto '.*' > /dev/null; \
     apt-mark manual $savedAptMark
+
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 
 RUN pip install --upgrade pip setuptools wheel
 
