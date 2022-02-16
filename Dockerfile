@@ -1,12 +1,33 @@
-FROM python:3.7-slim
-COPY . /app
-WORKDIR /app
-RUN pip install -U pip
-RUN pip install -r requirements.txt
-EXPOSE 80
-RUN mkdir ~/.streamlit
-RUN cp config.toml ~/.streamlit/config.toml
-RUN cp credentials.toml ~/.streamlit/credentials.toml
-WORKDIR /app
-ENTRYPOINT ["streamlit", "run"]
-CMD ["app.py"]
+FROM python:3.9-slim
+
+RUN \
+    # Print executed commands to terminal.
+    set -ex ; \
+    savedAptMark="$(apt-mark showmanual)" ; \
+    apt-get update ; \
+    apt install -y build-essential ; \
+    apt-mark auto '.*' > /dev/null; \
+    apt-mark manual $savedAptMark
+
+RUN pip install --upgrade pip setuptools wheel
+
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+
+RUN apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
+	rm -rf /var/lib/apt/lists/*
+
+COPY . .
+
+# Install models.
+ENV MODEL=mrm8488/t5-base-finetuned-summarize-news
+RUN python install.py
+
+ENV MODEL=google/pegasus-xsum
+RUN python install.py
+
+RUN mkdir ~/.streamlit ; \
+    cp config.toml ~/.streamlit/config.toml; \
+    cp credentials.toml ~/.streamlit/credentials.toml
+
+CMD ["streamlit", "run", "app.py"]
