@@ -1,4 +1,4 @@
-#MainMenu {
+/*#MainMenu {
     visibility: hidden;
 }
 
@@ -45,7 +45,6 @@ body {
 }
 
 div.row-widget.stRadio > div {
-    /* flex-direction: row; */
     align-items: stretch;
 }
 
@@ -70,7 +69,7 @@ div[role="listbox"] ul {
 div[data-baseweb="select"] > div {
     background-color: #ffffff;
 }
-
+*/
 /* # st.markdown('<p class="question"> How it works? </p>', unsafe_allow_html=True)
 # st.markdown(""" <span style = "color:grey; font-size:20px;">
 #                     This is an NLG based demo to show how modern neural network generate text.
@@ -88,3 +87,99 @@ div[data-baseweb="select"] > div {
 #                     </span>
 #                 </a>
 #             """, unsafe_allow_html=True) */
+
+
+div.row-widget.stRadio > div[role="radiogroup"] > label[data-baseweb="radio"] > div:first-child {
+    background-color: #00BA9A;
+}
+
+div.stRadio > label {
+    font-size: 1.3rem !important;
+    font-weight: 600;
+}
+
+div.stTextArea > label {
+    font-size: 1.3rem !important;
+    font-weight: 600;
+}
+
+div.stTextInput > label {
+    font-size: 1.3rem !important;
+    font-weight: 600;
+}
+
+div.row-widget.stRadio > div{
+    flex-direction:row;justify-content: left;
+}
+
+div.st-bf{
+    flex-direction:column;
+}
+
+div.st-ag{
+    font-weight:bold;padding-left:2px;
+}
+
+div[data-baseweb="input"] > value {
+    background-color: #7600ec;
+}
+
+.stTextInput [data-baseweb=base-input] {
+    background-image: linear-gradient(140deg, rgb(66, 88, 249) 0%, #007AFF 50%, #00C48C 75%);
+    -webkit-text-fill-color: white;
+}
+
+.stTextInput [data-baseweb=base-input] [disabled=""]{
+    background-image: linear-gradient(45deg, red, purple, red);
+    -webkit-text-fill-color: gray;
+}
+
+.stButton > button:first-child {
+    background-color: #000000;
+    color:#ffffff;
+    font-weight: 600;
+    padding: 20px 50px 20px 50px;
+    margin-top: 40px;
+    padding-left: 40px;
+    padding-right: 40px;
+    font-size: 1.4rem;
+}
+
+.stButton > button:first-child:hover {
+    background-color: #000000;
+    color:#ffffff;
+    font-weight: 600;
+    border-width: 0;
+    margin-top: 40px;
+    padding-left: 40px;
+    padding-right: 40px;
+    font-size: 1.4rem;
+}
+
+[data-testid="stSidebar"] button:first-child {
+    background-color: #000000;
+    color:#ffffff;
+    font-weight: 600;
+    padding: 0px;
+    margin-top: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+    font-size: 1.1rem;
+}
+
+[data-testid="stSidebar"] button:first-child:hover {
+    background-color: #000000;
+    color:#ffffff;
+    font-weight: 600;
+    padding: 0px;
+    border-width: 0;
+    margin-top: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+    font-size: 1.1rem;
+}
+
+.stTextArea [data-baseweb=base-input] {
+    background-image: linear-gradient(140deg, rgb(66, 88, 249) 0%, #007AFF 50%, #00C48C 75%);
+    -webkit-text-fill-color: white;
+}
