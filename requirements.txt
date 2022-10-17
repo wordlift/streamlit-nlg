@@ -1,6 +1,8 @@
-streamlit==0.77.0
-google==2.0.3
-trafilatura==0.6.1
-transformers==3.5.0
-pandas==1.2.1
-torch==1.7.1
+google~=3.0.0
+pandas~=1.5.0
+sentencepiece~=0.1.96
+streamlit~=1.13.0
+textstat~=0.7.3
+torch~=1.12.0
+trafilatura==1.2.0
+transformers~=4.23.1
