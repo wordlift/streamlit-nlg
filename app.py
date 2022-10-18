@@ -262,7 +262,6 @@ def main():
                                         trafilatura_body = trafilatura_body.split(response_wait_message)[-1][1:]
 
                                     trafilatura_body = trafilatura_body.replace('\n', ' ')
-                                    st.warning("let's grade")
 
                                     if perform_sentence_quality == 'Yes':
                                         graded_sentences = evaluate_sentence_quality(trafilatura_body)
