@@ -1,5 +1,4 @@
 import os
-import re
 import errno
 import requests
 import pandas as pd
@@ -41,19 +40,13 @@ def load_css(file_name):
 @st.cache
 def get_serp_results(uQuery, uTLD, uNum, uStart, uStop, uCountry, uLanguage):
     d = []
-    for j in search(query=uQuery,
-                    tld=uTLD,
-                    lang=uLanguage,
-                    num=uNum,
-                    start=uStart,
-                    stop=uStop,
-                    pause=2,
-                    country=uCountry):
+    for j in search(query=uQuery, tld=uTLD, lang=uLanguage, num=uNum, start=uStart, stop=uStop,
+                    pause=2, country=uCountry):
         d.append(j)
     return d
 
 
-# Scraping results with Wordlift (Trafilatura can be an option)
+# Scraping results with Wordlift. Trafilatura can be an option.
 @st.cache
 def get_html_from_urls(_url, _quora_flag):
 
@@ -88,30 +81,28 @@ def get_html_from_urls(_url, _quora_flag):
 
 
 def clean_html_with_trafilatura(response_body):
-    # print("Answer: Started cleaning the HTML with trafilatura")
-    trafilatura_body = trafilatura.extract(response_body,
-                                           favor_precision=True,
-                                           include_tables=True,
-                                           include_formatting=False,
-                                           include_comments=False,
-                                           include_links=False)
+    try:
+        trafilatura_body = trafilatura.extract(response_body,
+                                               favor_precision=True,
+                                               include_tables=True,
+                                               include_formatting=False,
+                                               include_comments=False,
+                                               include_links=False)
+    except:
+        trafilatura_body = ''
     return trafilatura_body
 
 
 def evaluate_sentence_quality(_sentences):
     _result_list = []
-
     _sentences_list = _sentences.split('.')
 
     for _sentence in _sentences_list:
         _sentence = _sentence + '. '
-
         score = textstat.text_standard(_sentence, float_output=False)
-
         if score not in ['-1th and 0th grade', '0th and 1st grade', '1st and 2nd grade',
                          '2nd and 3rd grade', '3rd and 4th grade', '4th and 5th grade']:
             _result_list.append(str(_sentence))
-
     return _result_list
 
 
@@ -130,8 +121,8 @@ def display_result(_summary_result, _model_name, _count=1, _total=1):
                 + '<p style="font-family:sans-serif; color:DarkSlateGrey; font-size: 14px;"><em>' + _summary_result + '</em></p>',
                 unsafe_allow_html=True)
     else:
-        _t5_summary_result = 'I am sorry. I am afraid I cannot answer it.'
-        st.warning(_t5_summary_result)
+        _summary_result = 'I am sorry. I am afraid I cannot answer it.'
+        st.warning(_summary_result)
 
 
 @st.experimental_memo
@@ -321,8 +312,11 @@ def generate_italian_summary(text, tokenizer, model, device, min_summary_length,
 
 def from_html_to_summary(serp_result, clean_graded_sentences, summary_model):
     serp_details = []
+    if clean_graded_sentences:
+        summary_result = summarize(clean_graded_sentences, summary_model)
+    else:
+        summary_result = 'I am sorry. I am afraid I cannot answer it.'
 
-    summary_result = summarize(clean_graded_sentences, summary_model)
     serp_details.append(summary_result)
     serp_details.append(serp_result)
     serp_details.append(summary_model)
@@ -336,21 +330,19 @@ def from_url_to_html(serp_result, quora_flag, perform_sentence_quality, summary_
     graded_sentences = []
 
     # Scrape the HTML content of a given URL
-    # print(f"Request2: Could you scrape the HTML for this website: {serp_result}")
     response_body = get_html_from_urls(serp_result, quora_flag)
 
     # Retrieve the content data from the json object
     if (not response_body) or (response_body == "Connection Error"):
+        clean_graded_sentences = ''
         serp_details.append("Connection Error")
         serp_details.append(serp_result)
         serp_details.append("Connection Error")
         serp_details.append("Connection Error")
     else:
-        # print("Request3: Now we have to clean the HTML with trafilatura")
         trafilatura_body = clean_html_with_trafilatura(response_body)
 
         # In some cases, the scraper returns an error. Remove it and keep the last try/part.
-        # Something went wrong. Wait a moment and try again.
         response_wait_message = 'Something went wrong. Wait a moment and try again.'
         if response_wait_message in trafilatura_body:
             trafilatura_body = trafilatura_body.split(response_wait_message)[-1][1:]
@@ -364,9 +356,7 @@ def from_url_to_html(serp_result, quora_flag, perform_sentence_quality, summary_
 
         clean_graded_sentences = ' '.join(graded_sentences)
         clean_graded_sentences = clean_graded_sentences.strip()
-
         serp_details = from_html_to_summary(serp_result, clean_graded_sentences, summary_model)
-
     return serp_details, clean_graded_sentences
 
 
@@ -388,12 +378,10 @@ def write_result_to_file(_queries, _summaries, _urls, _models, _initial_texts, _
 
     try:
         df_all_data.to_csv(os.path.join(_data_path, file_name))
-
         # with pd.ExcelWriter(os.path.join(_data_path, xlsx_filename)) as writer:
         #     df_all_data.to_excel(writer, sheet_name='SerpSummaries')
         #     writer.save()
         #     st.warning('to_xlsx')
-
         write_message = "Result file saved to disk."
     except:
         write_message = "Nothing was saved."
