@@ -84,7 +84,8 @@ with st.sidebar.expander("See the available actions"):
     if not dirlist:
         st.warning("No folder found.")
     else:
-        existing_folder = st.selectbox('🗄️ Select an existing project', dirlist)
+        sorted_list = sorted(dirlist)
+        existing_folder = st.selectbox('🗄️ Select an existing project', sorted_list)
         selected_project = os.path.join(data_path, existing_folder)
     button_list_files = st.button("List the files of the selected project")
     button_download_folder = st.button("Download the data of the selected project")
@@ -156,8 +157,9 @@ def main():
                     else:
                         df_queries = pd.DataFrame(data=[st_query], columns=['query'])
                         df_queries.to_csv(os.path.join(project_data_path, query_list_filename), index=False)
-                st.success("**Starting the *Query* workflow. If you provided an email address, you'll be notified once "
-                           "completed. Otherwise, use the list file option to check when the output is ready.**")
+                st.success("**Starting the *Query* workflow. If you provided an email address, the results will be "
+                           "emailed to you. Otherwise, they'll be stored under the provided project name for you "
+                           "to download.**")
 
                 search_request_count = 0  # Count the number of Google searches
                 quora_flag = 1  # 1 takes only the top result, 0 takes all quora answers, -1 not a quora custom search
@@ -180,7 +182,7 @@ def main():
                                                                   result_model_name_list,
                                                                   result_text_to_summarize_list,
                                                                   project_data_path, search_request_count)
-                            st.write(f"After {search_request_count} requests, let's pause for a while: {write_response}")
+                            st.write(f"After {search_request_count} requests, let's pause for a while. {write_response}")
                             time.sleep(10)
 
                         # There are 3 steps for building the query
@@ -221,7 +223,10 @@ def main():
                                 combined_clean_graded_sentences = ' '.join(combined_graded_sentences)
                                 combined_clean_graded_sentences = combined_clean_graded_sentences.strip()
                                 # Summarize the combined sentences and store them
-                                full_summary_result = summarize(combined_clean_graded_sentences, st_summary_model)
+                                if combined_clean_graded_sentences:
+                                    full_summary_result = summarize(combined_clean_graded_sentences, st_summary_model)
+                                else:
+                                    full_summary_result = 'I am sorry. I am afraid I cannot answer it.'
                                 result_query_list.append(query_text)
                                 result_summary_list.append(full_summary_result)
                                 result_summarized_url_list.append('Combined SERP URLs')
