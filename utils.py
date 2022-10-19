@@ -1,5 +1,5 @@
 import os
-import time
+import re
 import errno
 import requests
 import pandas as pd
@@ -19,6 +19,7 @@ import torch
 from transformers import BertTokenizerFast, EncoderDecoderModel
 from transformers import MBartTokenizer, MBartForConditionalGeneration
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
+from transformers import PegasusForConditionalGeneration, PegasusTokenizer
 
 
 def mkdir_p(path):
@@ -61,7 +62,6 @@ def get_html_from_urls(_url, _quora_flag):
         _url = _url.split('?')[0]
 
     response_status = 500
-    # Using WL api to scrape the html of a page
     try:
         response = requests.get("http://chrome-dev.wordlift.it", params=query)
 
@@ -82,7 +82,6 @@ def get_html_from_urls(_url, _quora_flag):
             return body
         else:
             return None
-
     except:
         body = "Connection Error"
         return body
@@ -120,7 +119,7 @@ def display_result(_summary_result, _model_name, _count=1, _total=1):
     if _summary_result.strip():
         if _total != -1:
             st.markdown(
-                '<p style="font-family:sans-serif; color:LightSeaGreen; font-size: 21px;">{} summary for URL {}/{}</p>'.format \
+                '<p style="font-family:sans-serif; color:LightSeaGreen; font-size: 21px;">{} summary</p>'.format \
                     (_model_name, _count,
                      _total) + '<p style="font-family:sans-serif; color:DarkSlateGrey; font-size: 14px;"><em>'
                 + _summary_result + '</em></p>', unsafe_allow_html=True)
@@ -177,13 +176,25 @@ def load_roberta_tokenizer():
     return _tokenizer
 
 
+@st.experimental_memo
+def load_pegasus_model():
+    model_name = "google/pegasus-xsum"
+    _model = PegasusForConditionalGeneration.from_pretrained(model_name)
+    return _model
+
+
+@st.experimental_memo
+def load_pegasus_tokenizer():
+    model_name = "google/pegasus-xsum"
+    _tokenizer = PegasusTokenizer.from_pretrained(model_name)
+    return _tokenizer
+
+
 @st.cache
-def summarize(text, model_name, min_summary_length, max_summary_length):
+def summarize(text, model_name, min_summary_length=32, max_summary_length=512):
 
     if model_name == "T5-base":
-        print("Request: Please load t5")
         model = load_t5_model()
-        print("Thanks for loading t5!!!")
         tokenizer = load_t5_tokenizer()
 
         input_ids = tokenizer.encode(text,
@@ -206,7 +217,6 @@ def summarize(text, model_name, min_summary_length, max_summary_length):
         returned_summary = t5_summary[0]
 
     elif model_name == 'Roberta-med':
-
         model = load_roberta_model()
         tokenizer = load_roberta_tokenizer()
 
@@ -224,7 +234,6 @@ def summarize(text, model_name, min_summary_length, max_summary_length):
             tokenizer.batch_decode(summary_ids, skip_special_tokens=True, clean_up_tokenization_spaces=True)[0]
 
     elif model_name == 'Long-T5':
-
         model = load_longt5_model()
         tokenizer = load_longt5_tokenizer()
 
@@ -238,8 +247,22 @@ def summarize(text, model_name, min_summary_length, max_summary_length):
                                      early_stopping=True
                                      )
 
-        returned_summary = \
-            tokenizer.batch_decode(summary_ids, skip_special_tokens=True, clean_up_tokenization_spaces=True)[0]
+        returned_summary = tokenizer.batch_decode(summary_ids, skip_special_tokens=True, clean_up_tokenization_spaces=True)[0]
+
+    elif model_name == 'Pegasus-xsum':
+        loaded_model = load_pegasus_model()
+        tokenizer_model = load_pegasus_tokenizer()
+
+        tokens = tokenizer_model(text, truncation=True, padding="max_length", return_tensors="pt")
+        summary = loaded_model.generate(**tokens,
+                                        min_length=min_summary_length,
+                                        max_length=max_summary_length,
+                                        do_sample=True, temperature=3.0,
+                                        top_k=30, top_p=0.70,
+                                        repetition_penalty=1.2,
+                                        length_penalty=5,
+                                        num_return_sequences=1)
+        returned_summary = tokenizer_model.decode(summary[0], skip_special_tokens=True, clean_up_tokenization_spaces=True)
 
     elif model_name == 'German':
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -294,6 +317,57 @@ def generate_italian_summary(text, tokenizer, model, device, min_summary_length,
                             max_length=max_summary_length,
                             attention_mask=attention_mask)
     return tokenizer.decode(output[0], skip_special_tokens=True)
+
+
+def from_html_to_summary(serp_result, clean_graded_sentences, summary_model):
+    serp_details = []
+
+    summary_result = summarize(clean_graded_sentences, summary_model)
+    serp_details.append(summary_result)
+    serp_details.append(serp_result)
+    serp_details.append(summary_model)
+    serp_details.append(clean_graded_sentences[:800])
+
+    return serp_details
+
+
+def from_url_to_html(serp_result, quora_flag, perform_sentence_quality, summary_model):
+    serp_details = []
+    graded_sentences = []
+
+    # Scrape the HTML content of a given URL
+    # print(f"Request2: Could you scrape the HTML for this website: {serp_result}")
+    response_body = get_html_from_urls(serp_result, quora_flag)
+
+    # Retrieve the content data from the json object
+    if (not response_body) or (response_body == "Connection Error"):
+        serp_details.append("Connection Error")
+        serp_details.append(serp_result)
+        serp_details.append("Connection Error")
+        serp_details.append("Connection Error")
+    else:
+        # print("Request3: Now we have to clean the HTML with trafilatura")
+        trafilatura_body = clean_html_with_trafilatura(response_body)
+
+        # In some cases, the scraper returns an error. Remove it and keep the last try/part.
+        # Something went wrong. Wait a moment and try again.
+        response_wait_message = 'Something went wrong. Wait a moment and try again.'
+        if response_wait_message in trafilatura_body:
+            trafilatura_body = trafilatura_body.split(response_wait_message)[-1][1:]
+
+        trafilatura_body = trafilatura_body.replace('\n', ' ')
+
+        if perform_sentence_quality == 'Yes':
+            graded_sentences = evaluate_sentence_quality(trafilatura_body)
+        else:
+            graded_sentences.append(trafilatura_body)
+
+        clean_graded_sentences = ' '.join(graded_sentences)
+        clean_graded_sentences = clean_graded_sentences.strip()
+
+        serp_details = from_html_to_summary(serp_result, clean_graded_sentences, summary_model)
+
+    return serp_details, clean_graded_sentences
 
 
 def write_result_to_file(_queries, _summaries, _urls, _models, _initial_texts, _data_path, _search_request_count=-1):

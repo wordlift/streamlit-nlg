@@ -16,7 +16,7 @@ def parse_args():
     parser.add_argument('--project_data_path', default='./data/', type=str, required=False)
     parser.add_argument('--pwd', default='pwd', type=str, required=False)
     parser.add_argument('--search_engine', default='Google', type=str)
-    parser.add_argument('--source_entry', default='Flow', type=str, required=False)
+    parser.add_argument('--source_entry', default='Query', type=str, required=False)
     parser.add_argument('--summary_model', default='English-T5', type=str, required=False)
     parser.add_argument('--target_geo', default='US', type=str)
     parser.add_argument('--target_language', default='en', type=str)
@@ -41,7 +41,7 @@ def parse_args():
     result_text_to_summarize_list = []
 
     summary_models = [args.summary_model]
-    # For the Flow and URL options, read the query from the newly created CSV file
+    # For the Query and URL options, read the query from the newly created CSV file
     df_queries = pd.read_csv(os.path.join(args.project_data_path, query_list_filename))
 
     if not df_queries.empty:
@@ -57,7 +57,7 @@ def parse_args():
 
             query_text = row[df_queries.columns[0]]
 
-            if args.source_entry == 'Flow':
+            if args.source_entry == 'Query':
                 if args.search_engine == 'Google':
                     final_query = query_text
                 else:
@@ -83,7 +83,7 @@ def parse_args():
 
                     # Retrieving the content property from the json object
                     if (not response_body) or (response_body == "Connection Error"):
-                        if args.source_entry == 'Flow':
+                        if args.source_entry == 'Query':
                             result_query_list.append(final_query)
                         else:
                             result_query_list.append('UI entry')
@@ -124,7 +124,7 @@ def parse_args():
                             result_text_to_summarize_list.append(clean_graded_sentences[:800])
 
                 # Summarize the content of multiple URLs
-                if (len(serp_result_list) > 1) and (args.source_entry == 'Flow'):
+                if (len(serp_result_list) > 1) and (args.source_entry == 'Query'):
                     combined_clean_graded_sentences = ' '.join(combined_graded_sentences)
                     combined_clean_graded_sentences = combined_clean_graded_sentences.strip()
 
@@ -144,7 +144,7 @@ def parse_args():
 
     print(result_summarized_url_list)
 
-    if args.source_entry == 'Flow':
+    if args.source_entry == 'Query':
         write_response = write_result_to_file(result_query_list, result_summary_list,
                                               result_summarized_url_list,
                                               result_model_name_list, result_text_to_summarize_list,
