@@ -1,4 +1,5 @@
 import os
+import re
 import errno
 import requests
 import pandas as pd
@@ -31,6 +32,23 @@ def mkdir_p(path):
             raise
 
 
+def delete_files(project_folder):
+    print(project_folder)
+    if os.path.isdir(project_folder):
+        for root, dirs, files in os.walk(project_folder):
+            for file in files:
+                try:
+                    # col1.write(f"Deleting: {file}")
+                    os.remove(project_folder + "/" + file)
+                except OSError as e:
+                    print(e)
+                    return e
+                    # col1.error("Error: %s : %s" % (project_folder + "/" + file, e.strerror))
+    else:
+        return 'Directory not found: {}'.format(project_folder)
+    return 'All files have been deleted. Project name: {}'.format(project_folder)
+
+
 def load_css(file_name):
     with open(file_name) as f:
         st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
@@ -49,7 +67,6 @@ def get_serp_results(uQuery, uTLD, uNum, uStart, uStop, uCountry, uLanguage):
 # Scraping results with Wordlift. Trafilatura can be an option.
 @st.cache
 def get_html_from_urls(_url, _quora_flag):
-
     query = {'u': _url}
     if '?' in _url:
         _url = _url.split('?')[0]
@@ -93,7 +110,7 @@ def clean_html_with_trafilatura(response_body):
     return trafilatura_body
 
 
-def evaluate_sentence_quality(_sentences):
+def check_grammar(_sentences):
     _result_list = []
     _sentences_list = _sentences.split('.')
 
@@ -183,7 +200,6 @@ def load_pegasus_tokenizer():
 
 @st.cache
 def summarize(text, model_name, min_summary_length=32, max_summary_length=512):
-
     if model_name == "T5-base":
         model = load_t5_model()
         tokenizer = load_t5_tokenizer()
@@ -238,7 +254,8 @@ def summarize(text, model_name, min_summary_length=32, max_summary_length=512):
                                      early_stopping=True
                                      )
 
-        returned_summary = tokenizer.batch_decode(summary_ids, skip_special_tokens=True, clean_up_tokenization_spaces=True)[0]
+        returned_summary = \
+        tokenizer.batch_decode(summary_ids, skip_special_tokens=True, clean_up_tokenization_spaces=True)[0]
 
     elif model_name == 'Pegasus-xsum':
         loaded_model = load_pegasus_model()
@@ -253,7 +270,8 @@ def summarize(text, model_name, min_summary_length=32, max_summary_length=512):
                                         repetition_penalty=1.2,
                                         length_penalty=5,
                                         num_return_sequences=1)
-        returned_summary = tokenizer_model.decode(summary[0], skip_special_tokens=True, clean_up_tokenization_spaces=True)
+        returned_summary = tokenizer_model.decode(summary[0], skip_special_tokens=True,
+                                                  clean_up_tokenization_spaces=True)
 
     elif model_name == 'German':
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -350,7 +368,7 @@ def from_url_to_html(serp_result, quora_flag, perform_sentence_quality, summary_
         trafilatura_body = trafilatura_body.replace('\n', ' ')
 
         if perform_sentence_quality == 'Yes':
-            graded_sentences = evaluate_sentence_quality(trafilatura_body)
+            graded_sentences = check_grammar(trafilatura_body)
         else:
             graded_sentences.append(trafilatura_body)
 
@@ -382,7 +400,7 @@ def write_result_to_file(_queries, _summaries, _urls, _models, _initial_texts, _
         #     df_all_data.to_excel(writer, sheet_name='SerpSummaries')
         #     writer.save()
         #     st.warning('to_xlsx')
-        write_message = "Result file saved to disk."
+        write_message = f"Result file saved to disk: {_data_path}"
     except:
         write_message = "Nothing was saved."
 
@@ -408,6 +426,15 @@ def zip_and_download(_data_path, faq_files):
     st.warning('****************************')
     st.markdown(href, unsafe_allow_html=True)
     st.warning('****************************')
+
+
+
+def validate_email_format(st_destination_email):
+    regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+    if not re.fullmatch(regex, st_destination_email):
+        st.warning("Invalid email format")
+        return False
+    return True
 
 
 def send_email(pwd, project_data_path, destination_email, zip_files):
