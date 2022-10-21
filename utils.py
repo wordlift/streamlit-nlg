@@ -1,5 +1,6 @@
 import os
 import re
+import time
 import errno
 import requests
 import pandas as pd
@@ -15,12 +16,7 @@ from email import encoders
 from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
-import torch
-from transformers import BertTokenizerFast, EncoderDecoderModel
-from transformers import MBartTokenizer, MBartForConditionalGeneration
-from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
-from transformers import PegasusForConditionalGeneration, PegasusTokenizer
-
+from models import summarize_text
 
 def mkdir_p(path):
     try:
@@ -32,26 +28,95 @@ def mkdir_p(path):
             raise
 
 
+def list_directories(data_path):
+    dir_list = []
+
+    # List all existing projects
+    for root, dirs, files in os.walk(data_path):
+        for dir_folder in dirs:
+            dir_name = os.path.join(root, dir_folder)
+            dir_list.append(dir_name.split('/')[-1])
+    return dir_list
+
+
 def delete_files(project_folder):
     print(project_folder)
     if os.path.isdir(project_folder):
         for root, dirs, files in os.walk(project_folder):
             for file in files:
                 try:
-                    # col1.write(f"Deleting: {file}")
                     os.remove(project_folder + "/" + file)
                 except OSError as e:
-                    print(e)
                     return e
-                    # col1.error("Error: %s : %s" % (project_folder + "/" + file, e.strerror))
     else:
         return 'Directory not found: {}'.format(project_folder)
     return 'All files have been deleted. Project name: {}'.format(project_folder)
 
 
+def delete_folder(project_folder):
+    if project_folder not in ['./data/default_project']:
+        if os.path.isdir(project_folder):
+            st.warning(delete_files(project_folder))
+            try:
+                os.rmdir(project_folder)
+            except OSError as e:
+                return "Error: %s : %s" % (project_folder, e.strerror)
+        else:
+            return f"No directory to delete. {project_folder} not found."
+    else:
+        return "Cannot remove the default project"
+
+    return "Project removed."
+
+
+def list_project_files(project_folder):
+    filelist = []
+    try:
+        for root, dirs, files in os.walk(project_folder):
+            for file in files:
+                filename = os.path.join(root, file)
+                filelist.append(filename.split('/')[-1])
+        if not filelist:
+            return "The selected directory is empty."
+        else:
+            return filelist
+    except:
+        return "Error while listing project files"
+
+
+def download_data(project_folder):
+    filelist = []
+    try:
+        for root, dirs, files in os.walk(project_folder):
+            for file in files:
+                filename = os.path.join(root, file)
+                if filename.split('.')[-1] in ['csv', 'xlsx']:
+                    filelist.append(filename.split('/')[-1])
+
+        if not filelist:
+            return "No file to download."
+        else:
+            zip_and_download(project_folder + "/", filelist)
+    except:
+        return "Error while downloading the data."
+
+
 def load_css(file_name):
     with open(file_name) as f:
         st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
+
+
+def build_the_query(main_query, custom_search, search_engine):
+    # There are 2 steps for building the query
+    # Step 1: Get the search engine with/without the site operator
+    if custom_search:
+        final_query = main_query
+    else:
+        final_query = main_query + " site:{}".format(search_engine)
+    # Step 2: Exclude PDF files from the SERP
+    final_query = final_query + " -filetype:pdf"
+
+    return final_query
 
 
 # Run Google search
@@ -142,221 +207,35 @@ def display_result(_summary_result, _model_name, _count=1, _total=1):
         st.warning(_summary_result)
 
 
-@st.experimental_memo
-def load_t5_model():
-    model_name = 'mrm8488/t5-base-finetuned-summarize-news'
-    _model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
-    return _model
-
-
-@st.experimental_memo
-def load_t5_tokenizer():
-    model_name = 'mrm8488/t5-base-finetuned-summarize-news'
-    _tokenizer = AutoTokenizer.from_pretrained(model_name)
-    return _tokenizer
-
-
-@st.experimental_memo
-def load_longt5_model():
-    model_name = 'pszemraj/long-t5-tglobal-base-16384-book-summary'
-    _model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
-    return _model
-
-
-@st.experimental_memo
-def load_longt5_tokenizer():
-    model_name = 'pszemraj/long-t5-tglobal-base-16384-book-summary'
-    _tokenizer = AutoTokenizer.from_pretrained(model_name)
-    return _tokenizer
-
-
-@st.experimental_memo
-def load_roberta_model():
-    model_name = 'mrm8488/roberta-med-small2roberta-med-small-finetuned-cnn_daily_mail-summarization'
-    _model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
-    return _model
-
-
-@st.experimental_memo
-def load_roberta_tokenizer():
-    model_name = 'mrm8488/roberta-med-small2roberta-med-small-finetuned-cnn_daily_mail-summarization'
-    _tokenizer = AutoTokenizer.from_pretrained(model_name)
-    return _tokenizer
-
-
-@st.experimental_memo
-def load_pegasus_model():
-    model_name = "google/pegasus-xsum"
-    _model = PegasusForConditionalGeneration.from_pretrained(model_name)
-    return _model
-
-
-@st.experimental_memo
-def load_pegasus_tokenizer():
-    model_name = "google/pegasus-xsum"
-    _tokenizer = PegasusTokenizer.from_pretrained(model_name)
-    return _tokenizer
-
-
-@st.cache
-def summarize(text, model_name, min_summary_length=32, max_summary_length=512):
-    if model_name == "T5-base":
-        model = load_t5_model()
-        tokenizer = load_t5_tokenizer()
-
-        input_ids = tokenizer.encode(text,
-                                     return_tensors="pt",
-                                     add_special_tokens=True,
-                                     padding='max_length',
-                                     truncation=True,
-                                     max_length=512)
-
-        generated_ids = model.generate(input_ids=input_ids,
-                                       num_beams=4,
-                                       min_length=min_summary_length,
-                                       max_length=max_summary_length,
-                                       repetition_penalty=2.5,
-                                       length_penalty=1.0,
-                                       early_stopping=True)
-
-        t5_summary = [tokenizer.decode(g, skip_special_tokens=True, clean_up_tokenization_spaces=True) for g in
-                      generated_ids]
-        returned_summary = t5_summary[0]
-
-    elif model_name == 'Roberta-med':
-        model = load_roberta_model()
-        tokenizer = load_roberta_tokenizer()
-
-        inputs = tokenizer(text, max_length=512, return_tensors="pt", truncation=True)
-        summary_ids = model.generate(inputs["input_ids"],
-                                     num_beams=4,
-                                     min_length=min_summary_length,
-                                     max_length=max_summary_length,
-                                     repetition_penalty=2.5,
-                                     length_penalty=1.0,
-                                     early_stopping=True
-                                     )
-
-        returned_summary = \
-            tokenizer.batch_decode(summary_ids, skip_special_tokens=True, clean_up_tokenization_spaces=True)[0]
-
-    elif model_name == 'Long-T5':
-        model = load_longt5_model()
-        tokenizer = load_longt5_tokenizer()
-
-        inputs = tokenizer(text, max_length=512, return_tensors="pt", truncation=True)  # 1024
-        summary_ids = model.generate(inputs["input_ids"],
-                                     num_beams=4,
-                                     min_length=min_summary_length,
-                                     max_length=max_summary_length,
-                                     repetition_penalty=2.5,
-                                     length_penalty=1.0,
-                                     early_stopping=True
-                                     )
-
-        returned_summary = \
-        tokenizer.batch_decode(summary_ids, skip_special_tokens=True, clean_up_tokenization_spaces=True)[0]
-
-    elif model_name == 'Pegasus-xsum':
-        loaded_model = load_pegasus_model()
-        tokenizer_model = load_pegasus_tokenizer()
-
-        tokens = tokenizer_model(text, truncation=True, padding="max_length", return_tensors="pt")
-        summary = loaded_model.generate(**tokens,
-                                        min_length=min_summary_length,
-                                        max_length=max_summary_length,
-                                        do_sample=True, temperature=3.0,
-                                        top_k=30, top_p=0.70,
-                                        repetition_penalty=1.2,
-                                        length_penalty=5,
-                                        num_return_sequences=1)
-        returned_summary = tokenizer_model.decode(summary[0], skip_special_tokens=True,
-                                                  clean_up_tokenization_spaces=True)
-
-    elif model_name == 'German':
-        device = 'cuda' if torch.cuda.is_available() else 'cpu'
-        ckpt = 'mrm8488/bert2bert_shared-german-finetuned-summarization'
-        tokenizer = BertTokenizerFast.from_pretrained(ckpt)
-        model = EncoderDecoderModel.from_pretrained(ckpt).to(device)
-        if device == 'cuda':
-            model.to('cuda:0')
-
-        returned_summary = generate_german_summary(text, tokenizer, model, device, max_summary_length)
-
-    elif model_name == 'Italian':
-        device = 'cuda' if torch.cuda.is_available() else 'cpu'
-        tokenizer = MBartTokenizer.from_pretrained("ARTeLab/mbart-summarization-mlsum")
-        model = MBartForConditionalGeneration.from_pretrained("ARTeLab/mbart-summarization-mlsum")
-        if device == 'cuda':
-            model.to('cuda:0')
-
-        returned_summary = generate_italian_summary(text, tokenizer, model, device, max_summary_length)
-
-    else:
-        returned_summary = "[Error] No summarizer has been selected."
-
-    return returned_summary
-
-
-def generate_german_summary(text, tokenizer, model, device, min_summary_length, max_summary_length):
-    inputs = tokenizer([text],
-                       padding="max_length",
-                       truncation=True,
-                       max_length=512,
-                       return_tensors="pt")
-    input_ids = inputs.input_ids.to(device)
-    attention_mask = inputs.attention_mask.to(device)
-    output = model.generate(input_ids,
-                            min_length=min_summary_length,
-                            max_length=max_summary_length,
-                            attention_mask=attention_mask)
-    return tokenizer.decode(output[0], skip_special_tokens=True)
-
-
-def generate_italian_summary(text, tokenizer, model, device, min_summary_length, max_summary_length):
-    inputs = tokenizer([text],
-                       padding="max_length",
-                       truncation=True,
-                       max_length=1024,
-                       return_tensors="pt")
-    input_ids = inputs.input_ids.to(device)
-    attention_mask = inputs.attention_mask.to(device)
-    output = model.generate(input_ids,
-                            min_length=min_summary_length,
-                            max_length=max_summary_length,
-                            attention_mask=attention_mask)
-    return tokenizer.decode(output[0], skip_special_tokens=True)
-
-
-def from_html_to_summary(serp_result, clean_graded_sentences, summary_model):
-    serp_details = []
-    if clean_graded_sentences:
-        summary_result = summarize(clean_graded_sentences, summary_model)
+def summarize_html(serp_result, clean_sentences, summary_model):
+    summarization_details = []
+    if clean_sentences:
+        summary_result = summarize_text(clean_sentences, summary_model)
     else:
         summary_result = 'I am sorry. I am afraid I cannot answer it.'
 
-    serp_details.append(summary_result)
-    serp_details.append(serp_result)
-    serp_details.append(summary_model)
-    serp_details.append(clean_graded_sentences[:800])
+    summarization_details.append(summary_result)
+    summarization_details.append(serp_result)
+    summarization_details.append(summary_model)
+    summarization_details.append(clean_sentences[:800])
 
-    return serp_details
+    return summarization_details
 
 
-def from_url_to_html(serp_result, quora_flag, perform_sentence_quality, summary_model):
-    serp_details = []
-    graded_sentences = []
+def summarize_url(serp_result, quora_flag, perform_sentence_quality, summary_model):
+    summarization_details = []
+    sentences = []
 
     # Scrape the HTML content of a given URL
     response_body = get_html_from_urls(serp_result, quora_flag)
 
     # Retrieve the content data from the json object
     if (not response_body) or (response_body == "Connection Error"):
-        clean_graded_sentences = ''
-        serp_details.append("Connection Error")
-        serp_details.append(serp_result)
-        serp_details.append("Connection Error")
-        serp_details.append("Connection Error")
+        clean_sentences = ''
+        summarization_details.append("Connection Error")
+        summarization_details.append(serp_result)
+        summarization_details.append("Connection Error")
+        summarization_details.append("Connection Error")
     else:
         trafilatura_body = clean_html_with_trafilatura(response_body)
 
@@ -368,14 +247,86 @@ def from_url_to_html(serp_result, quora_flag, perform_sentence_quality, summary_
         trafilatura_body = trafilatura_body.replace('\n', ' ')
 
         if perform_sentence_quality == 'Yes':
-            graded_sentences = check_grammar(trafilatura_body)
+            sentences = check_grammar(trafilatura_body)
         else:
-            graded_sentences.append(trafilatura_body)
+            sentences.append(trafilatura_body)
 
-        clean_graded_sentences = ' '.join(graded_sentences)
-        clean_graded_sentences = clean_graded_sentences.strip()
-        serp_details = from_html_to_summary(serp_result, clean_graded_sentences, summary_model)
-    return serp_details, clean_graded_sentences
+        clean_sentences = ' '.join(sentences)
+        clean_sentences = clean_sentences.strip()
+        summarization_details = summarize_html(serp_result, clean_sentences, summary_model)
+    return summarization_details, clean_sentences
+
+
+def loop_and_summarize(df_queries, project_data_path, summarizer_name, grammar_check, search_location, search_language,
+                       search_engine, custom_search_id, count_urls):
+    count_search_requests = 0  # Count the number of Google searches
+    quora_flag = 1  # 1 takes only the top result, 0 takes all quora answers, -1 not a quora custom search
+
+    # The following lists are used to create the final output CSV file
+    result_summary_list = []
+    result_summarized_url_list = []
+    result_model_name_list = []
+    result_query_list = []
+    result_text_to_summarize_list = []
+
+    for index, row in df_queries.iterrows():  # Loop 1: Process all the queries
+        # Pause every 10 requests
+        if count_search_requests % 10 == 0 and count_search_requests != 0:
+            write_response = write_result_to_file(result_query_list, result_summary_list,
+                                                  result_summarized_url_list,
+                                                  result_model_name_list,
+                                                  result_text_to_summarize_list,
+                                                  project_data_path, count_search_requests)
+            st.write(
+                f"After {count_search_requests} requests, let's pause for a while. {write_response}")
+            time.sleep(30)
+
+        # Build the search query that will be sent to Google
+        final_query = build_the_query(row[df_queries.columns[0]], custom_search_id, search_engine)
+
+        # Send the search query to Google
+        serp_results = get_serp_results(final_query, "com", 5, 0, count_urls, search_location, search_language)
+        count_search_requests += 1
+
+        if serp_results:  # Check that SERP returns at least one URL
+            multiple_urls_sentences = []  # Is specific for each query but common for multiple URLs
+
+            for serp_result in serp_results:  # Loop 2: Process all the SERP URLs
+                # Get the HTML content and then summarize
+                summarization_details, single_url_sentences = summarize_url(serp_result, quora_flag,
+                                                                            grammar_check,
+                                                                            summarizer_name)
+                # summarization_details is stores specific ordered information
+                result_query_list.append(row[df_queries.columns[0]])
+                result_summary_list.append(summarization_details[0])
+                result_summarized_url_list.append(summarization_details[1])
+                result_model_name_list.append(summarization_details[2])
+                result_text_to_summarize_list.append(summarization_details[3])
+
+                multiple_urls_sentences.append(single_url_sentences)
+
+            # Summarize the content of multiple URLs
+            if len(serp_results) > 1:
+                clean_multiple_urls_sentences = ' '.join(multiple_urls_sentences)
+                clean_multiple_urls_sentences = clean_multiple_urls_sentences.strip()
+                # Summarize the combined sentences and store them
+                if clean_multiple_urls_sentences:
+                    multiple_urls_summary = summarize_text(clean_multiple_urls_sentences, summarizer_name)
+                else:
+                    multiple_urls_summary = 'I am sorry. I am afraid I cannot answer it.'
+                result_query_list.append(row[df_queries.columns[0]])
+                result_summary_list.append(multiple_urls_summary)
+                result_summarized_url_list.append('Combined SERP URLs')
+                result_model_name_list.append(summarizer_name)
+                result_text_to_summarize_list.append(clean_multiple_urls_sentences[:800])
+        else:
+            return 'SERP is empty.'
+
+    write_response = write_result_to_file(result_query_list, result_summary_list,
+                                          result_summarized_url_list,
+                                          result_model_name_list, result_text_to_summarize_list,
+                                          project_data_path)
+    return write_response
 
 
 def write_result_to_file(_queries, _summaries, _urls, _models, _initial_texts, _data_path, _search_request_count=-1):
@@ -427,6 +378,17 @@ def zip_and_download(_data_path, faq_files):
     st.markdown(href, unsafe_allow_html=True)
     st.warning('****************************')
 
+
+def prepare_email(st_pwd, st_destination_email, project_data_path, zip_files):
+    if st_pwd and st_destination_email:
+        try:
+            if validate_email_format():
+                send_email(st_pwd, project_data_path, st_destination_email, zip_files)
+                return "Email sent."
+            else:
+                return "Email not sent."
+        except:
+            return "Error while sending the email."
 
 
 def validate_email_format(st_destination_email):
