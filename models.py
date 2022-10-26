@@ -119,18 +119,22 @@ def summarize_text(text, model_name, min_summary_length=32, max_summary_length=5
                                      )
 
         returned_summary = \
-        tokenizer.batch_decode(summary_ids, skip_special_tokens=True, clean_up_tokenization_spaces=True)[0]
+            tokenizer.batch_decode(summary_ids, skip_special_tokens=True, clean_up_tokenization_spaces=True)[0]
 
     elif model_name == 'Pegasus-xsum':
         loaded_model = load_pegasus_model()
         tokenizer_model = load_pegasus_tokenizer()
 
-        tokens = tokenizer_model(text, truncation=True, padding="max_length", return_tensors="pt")
+        # tokens = tokenizer_model(text, truncation=True, padding="max_length", return_tensors="pt")
+        tokens = tokenizer_model(text, truncation=True, padding="longest", return_tensors="pt")
+
         summary = loaded_model.generate(**tokens,
                                         min_length=min_summary_length,
                                         max_length=max_summary_length,
-                                        do_sample=True, temperature=3.0,
-                                        top_k=30, top_p=0.70,
+                                        do_sample=True,
+                                        temperature=3.0,
+                                        top_k=30,
+                                        top_p=0.70,
                                         repetition_penalty=1.2,
                                         length_penalty=5,
                                         num_return_sequences=1)
