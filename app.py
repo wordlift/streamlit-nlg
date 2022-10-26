@@ -19,9 +19,6 @@ data_path = "./data/"  # Path where all the data will be stored
 query_list_filename = 'queries.csv'  # Default name of the uploaded CSV file
 
 
-# os.environ['TOKENIZERS_PARALLELISM'] = "true"
-
-
 # Session state section
 def create_or_select():
     if st.session_state.selected_project == "Create a new project":
@@ -43,7 +40,7 @@ if 'custom_search_id' not in st.session_state:
 if 'search_engine' not in st.session_state:
     st.session_state.search_engine = 'quora.com'
 if 'count_urls' not in st.session_state:
-    st.session_state.count_urls = 2
+    st.session_state.count_urls = 3
 if 'search_language_id' not in st.session_state:
     st.session_state.search_language_id = 0
 if 'search_country_id' not in st.session_state:
@@ -75,7 +72,7 @@ with st.sidebar:
 
 # Options to populate widgets on the UI
 grammar_check_options = ('Yes', 'No')
-summarizer_options = ('T5-base', 'Roberta-med', 'Long-T5', 'Pegasus-xsum', 'German', 'Italian')
+summarizer_options = ('T5-base', 'Pegasus-xsum', 'Roberta-med', 'Long-T5', 'German', 'Italian')
 language_options = ("en", "it", "de", "nl", "pt", "es", "fr")
 country_options = ("US", "GB", "AU", "IN", "CA", "IT", "DE", "NL", "BE", "PT", "BR", "ES", "FR")
 
